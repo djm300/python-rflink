@@ -111,6 +111,8 @@ PACKET_FIELDS = {
     'set_level': 'dim_level',
     'sound': 'noise_level',
     'temp': 'temperature',
+    # Adding TYPE: RFLink gateway does not understand this but this is internal representation for the type of command template we need to use
+    'type': 'type of packet',
     'uv': 'uv_intensity',
     'ver': 'version',
     'volt': 'voltage',
