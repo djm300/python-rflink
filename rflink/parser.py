@@ -4,6 +4,9 @@ import re
 from collections import defaultdict
 from enum import Enum
 from typing import Any, Callable, Dict, Generator, cast
+import logging
+log = logging.getLogger(__name__)
+
 
 UNKNOWN = 'unknown'
 
@@ -21,12 +24,13 @@ PACKET_COMMAND3 = DELIM.join(['10', PROTOCOL, ADDRESS, COMMAND])
 PACKET_COMMAND4 = DELIM.join(['10', PROTOCOL, ADDRESS])
 
 Below are the 4 switch command templates, in line with the 4 packet command switches.
+Note that some field templates are written using <>: This is because they are copied from the docopt string which requires <> for positional fields
 """
 COMMAND_TEMPLATES = {
-'minimal': '{node};{protocol};{id};',
-'command': '{node};{protocol};{id};{command};',
-'switch_command': '{node};{protocol};{id};{switch};{command};',
-'switch_value_command': '{node};{protocol};{id};{switch};{value};{command};'
+'minimal': '{node};{<protocol>};{<id>};',
+'command': '{node};{<protocol>};{<id>};{<command>};',
+'switch_command': '{node};{<protocol>};{<id>};{<switch>};{<command>};',
+'switch_value_command': '{node};{<protocol>};{<id>};{<switch>};{<value>};{<command>};'
 }
 
 PACKET_ID_SEP = '_'
@@ -320,8 +324,11 @@ def encode_packet(packet: dict) -> str:
     
     """
     
-    if COMMAND_TEMPLATES.has_key(packet['type']):
+    log.debug("Packet encoding started for packet type "+COMMAND_TEMPLATES[packet['type']])
+
+    if COMMAND_TEMPLATES[packet['type']]:
         SWITCH_COMMAND_TEMPLATE = COMMAND_TEMPLATES[packet['type']]
+    # We should not end up in the case where we cannot find a template but let's default to the minimal template
     else:
         SWITCH_COMMAND_TEMPLATE = COMMAND_TEMPLATES['minimal']
 

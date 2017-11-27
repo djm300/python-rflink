@@ -2,7 +2,7 @@
 
 Usage:
   rflink [-v | -vv] [options]
-  rflink [-v | -vv] [options] [--repeat <repeat>] (on,off,allon,alloff,up,down,stop,disco+,disco-,mode0,mode1,mode2,mode3,mode4,mode5,mode6,mode7,mode8,pair,unpair,bright,color) <id> <switch> <value>
+  rflink [-v | -vv] [options] [--repeat <repeat>] (on|off|allon|alloff|up|down|stop|disco+|disco-|mode0|mode1|mode2|mode3|mode4|mode5|mode6|mode7|mode8|pair|unpair|bright|color) <protocol> <id> [<switch>] [<value>]
   rflink (-h | --help)
   rflink --version
 
@@ -70,6 +70,7 @@ def main(argv=sys.argv[1:], loop=None):
     else:
         ignore = []
 
+    logging.debug("Parsing options "+str(args))
     command = next((c for c in ALL_COMMANDS if args[c] is True), None)
 
     if command:
@@ -103,21 +104,23 @@ def main(argv=sys.argv[1:], loop=None):
             'switch_value_command': '{node};{protocol};{id};{switch};{value};{command};'
             """
             
-            cargs = {}
             # Insert protocol,id,switch,value,<command> key-value pairs in the dict 
-            cargs.update(args)
+            cargs= dict((k, args[k]) for k in ('<switch>', '<id>', '<value>','<protocol>'))
+            cargs.update({'<command>':command})
+
+            logging.debug("Passing command arguments: "+str(cargs))
             
-            if args['<value>']:
+            if cargs['<value>']:
                cargs.update({'type':'switch_value_command'})
-            elif args['<command>']:
-               cargs.update({'type':'command'})
-            elif args['<switch>']:
+            elif cargs['<switch>']:
                cargs.update({'type':'switch_command'})
-            elif args['<value>']:
-               cargs.update({'type':'switch_value_command'})
+            elif cargs['<command>']:
+               cargs.update({'type':'command'})
             else:
                cargs.update({'type':'minimal'})
             
+
+            logging.debug('command to be sent : '+cargs['type'])
             # now that we prepared the dict, let's pass it on.
             for _ in range(int(args['--repeat'])):
                 loop.run_until_complete(

@@ -125,28 +125,39 @@ class PacketHandling(ProtocolBase):
         """Concat fields and send packet to gateway."""
         self.send_raw_packet(encode_packet(fields))
 
-    # Check if argument is a string or a dict and dispatch to the right command
-    def send_command(self, device_id, action):
-        if isinstance(device_id, dict):
-            _send_command_dict(self, device_id, action)
-        elif isinstance(device_id, basestring):
-            _send_command_string(self, device_id, action)
-        
     def _send_command_string(self, device_id, action):
         """Send device command to rflink gateway."""
+        log.debug("Send_command started ")
+        log.debug("  Device ID: " + str(device_id))
+        log.debug("  Action: "+str(action))
+
         command = deserialize_packet_id(device_id)
         command['command'] = action
-        log.debug('sending command: %s', command)
+        log.debug('sending string command: %s', command)
         self.send_packet(command)
         
     # Define a new send_command that accepts a dict instead of a serialised device_id string    
     def _send_command_dict(self, cargs, action):
         """Send device command to rflink gateway."""
-        command['command'] = action
-        log.debug('sending command dictionary: %s', cargs)
+        log.debug("Send_command started ")
+        log.debug("  Cargs: " + str(cargs))
+        log.debug("  Action: "+str(action))
+
+        cargs['command'] = action
+        log.debug('sending dict command dictionary: %s', cargs)
         self.send_packet(cargs)
 
 
+    # Check if argument is a string or a dict and dispatch to the right command
+    def send_command(self, device_id, action):
+        log.debug("Send_command started ")
+        log.debug("  Device ID: " + str(device_id))
+        log.debug("  Action: "+str(action))
+        if isinstance(device_id, dict):
+            self._send_command_dict(device_id, action)
+        elif isinstance(device_id, basestring):
+            self._send_command_string(device_id, action)
+        
 class CommandSerialization(ProtocolBase):
     """Logic for ensuring asynchronous commands are send in order."""
 
