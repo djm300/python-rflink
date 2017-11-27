@@ -20,14 +20,14 @@ PACKET_COMMAND3 = DELIM.join(['10', PROTOCOL, ADDRESS, COMMAND])
 # 10;DELTRONIC;001c33;
 PACKET_COMMAND4 = DELIM.join(['10', PROTOCOL, ADDRESS])
 
-We will create 4 switch command templates, in line with the 4 packet command switches.
-
-
+Below are the 4 switch command templates, in line with the 4 packet command switches.
 """
-SWITCH_COMMAND_TEMPLATE_SWITCH_COMMAND = '{node};{protocol};{id};{switch};{command};'
-SWITCH_COMMAND_TEMPLATE_SWITCH_VALUE_COMMAND = '{node};{protocol};{id};{switch};{value};{command};'
-SWITCH_COMMAND_TEMPLATE_COMMAND = '{node};{protocol};{id};{command};'
-SWITCH_COMMAND_TEMPLATE_MINIMAL = '{node};{protocol};{id};'
+COMMAND_TEMPLATES = {
+'minimal': '{node};{protocol};{id};',
+'command': '{node};{protocol};{id};{command};',
+'switch_command': '{node};{protocol};{id};{switch};{command};',
+'switch_value_command': '{node};{protocol};{id};{switch};{value};{command};'
+}
 
 PACKET_ID_SEP = '_'
 
@@ -38,15 +38,16 @@ PROTOCOL = '[^;]{3,}'
 ADDRESS = '[0-9a-zA-Z]+'
 BUTTON = '[0-9a-zA-Z]+'
 VALUE = '[0-9a-zA-Z]+'
-# TODO: Command can be ON,OFF,ALLON,ALLOFF,DISCO+, DISCO-, MODE0 - MODE8
+
+# Command can be ON,OFF,ALLON,ALLOFF,DISCO+, DISCO-, MODE0 - MODE8, UP, DOWN, PAIR, UNPAIR, BRIGHT, COLOR
 # Use a more precise regex (?:[\s]|^)(ON|OFF|ALLON|ALLOFF|DISCO\+|DISCO-|MODE[0-8]|UP|DOWN|PAIR|UNPAIR|BRIGHT|COLOR)(?=[\s]|$)
-# https://regex101.com/r/uA2xR5/1 does wonder
-COMMAND = '(ON|OFF|ALLON|ALLOFF|DISCO\+|DISCO-|MODE[0-8]|UP|DOWN)'
+COMMAND = '(ON|OFF|ALLON|ALLOFF|DISCO\+|DISCO-|MODE[0-8]|UP|DOWN|PAIR|UNPAIR|BRIGHT|COLOR)'
 CONTROL_COMMAND = '[A-Z]+(=[A-Z0-9]+)?'
 DATA = '[a-zA-Z0-9;=_]+'
 RESPONSES = 'OK'
 VERSION = '[0-9a-zA-Z\ \.-]+'
 
+# The 4 PACKET_COMMAND templates below are used for matching against incoming commands. They actually are the same as the dict of COMMAND_TEMPLATES used above (but they are used to construct outgoing commands).
 # 10;NewKaku;0cac142;3;ON;
 PACKET_COMMAND = DELIM.join(['10', PROTOCOL, ADDRESS, BUTTON, COMMAND])
 # 10;MiLightv1;F746;00;3c00;ON;
@@ -313,33 +314,14 @@ def encode_packet(packet: dict) -> str:
     """
     
     """
-    TODO This template is not guaranteed to be the right one. For example, it ignores the RGBW value for Milight.
-
-    # 10;NewKaku;0cac142;3;ON;
-    PACKET_COMMAND = DELIM.join(['10', PROTOCOL, ADDRESS, BUTTON, COMMAND])
-    # 10;MiLightv1;F746;00;3c00;ON;
-    PACKET_COMMAND2 = DELIM.join(['10', PROTOCOL, ADDRESS, BUTTON, VALUE, COMMAND])
-    # 10;MERTIK;64;UP;
-    PACKET_COMMAND3 = DELIM.join(['10', PROTOCOL, ADDRESS, COMMAND])
-    # 10;DELTRONIC;001c33;
-    PACKET_COMMAND4 = DELIM.join(['10', PROTOCOL, ADDRESS])
-
-
-    Will use this one:
-    SWITCH_COMMAND_TEMPLATE_SWITCH_COMMAND = '{node};{protocol};{id};{switch};{command};'
-    SWITCH_COMMAND_TEMPLATE_SWITCH_VALUE_COMMAND = '{node};{protocol};{id};{switch};{value};{command};'
-    SWITCH_COMMAND_TEMPLATE_COMMAND = '{node};{protocol};{id};{command};'
-    SWITCH_COMMAND_TEMPLATE_MINIMAL = '{node};{protocol};{id};'
+    Will use one of the following templates in dict COMMAND_TEMPLATES
     
     """
-    if 'value' in packet:
-        SWITCH_COMMAND_TEMPLATE = SWITCH_COMMAND_TEMPLATE_SWITCH_VALUE_COMMAND
-    elif 'switch' in packet:
-        SWITCH_COMMAND_TEMPLATE = SWITCH_COMMAND_TEMPLATE_SWITCH_COMMAND     
-    elif 'command' in packet:
-        SWITCH_COMMAND_TEMPLATE =  SWITCH_COMMAND_TEMPLATE_COMMAND    
+    
+    if COMMAND_TEMPLATES.has_key(packet['type']):
+        SWITCH_COMMAND_TEMPLATE = COMMAND_TEMPLATES[packet['type']]
     else:
-        SWITCH_COMMAND_TEMPLATE = SWITCH_COMMAND_TEMPLATE_MINIMAL     
+        SWITCH_COMMAND_TEMPLATE = COMMAND_TEMPLATES['minimal']
 
     return SWITCH_COMMAND_TEMPLATE.format(
         node=PacketHeader.master.value,
