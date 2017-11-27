@@ -47,14 +47,6 @@ PROTOCOLS = {
 ALL_COMMANDS = ['on', 'off', 'allon', 'alloff', 'up', 'down', 'stop', 'disco+', 'disco-', 'mode0', 'mode1', 'mode2', 'mode3','mode4','mode5','mode6','mode7','mode8','pair','unpair','bright','color']
 
 
-"""
-Defines the presence and structure of parameters in the command we will send to RFLink
-
-'minimal': '{node};{protocol};{id};',
-'command': '{node};{protocol};{id};{command};',
-'switch_command': '{node};{protocol};{id};{switch};{command};',
-'switch_value_command': '{node};{protocol};{id};{switch};{value};{command};'
-"""
 from .parser import COMMAND_TEMPLATES 
 
 
@@ -102,11 +94,35 @@ def main(argv=sys.argv[1:], loop=None):
             # device_id is no longer sufficient for containing all the command info. We replace the string device_id by a dict which contains all provided parameters, including a 'type' key indicating the structure the packet should have on the wire to the RFLink.
             # TODO: construct dict of arguments command, switch, id, type
             
+            """
+            Define the presence and structure of parameters in the command we will send to RFLink
+
+            'minimal': '{node};{protocol};{id};',
+            'command': '{node};{protocol};{id};{command};',
+            'switch_command': '{node};{protocol};{id};{switch};{command};',
+            'switch_value_command': '{node};{protocol};{id};{switch};{value};{command};'
+            """
+            
+            cargs = {}
+            # Insert protocol,id,switch,value,<command> key-value pairs in the dict 
+            cargs.update((c for args.key() in ['<id>','<switch>','<value>']))
+            
+            if args['<value>']:
+               cargs.update({'type':'switch_value_command'})
+            elif args['<command>']
+               cargs.update({'type':'command'})
+            elif args['<switch>']
+               cargs.update({'type':'switch_command'})
+            elif args['<value>']
+               cargs.update({'type':'switch_value_command'})
+            else:
+               cargs.update({'type':'minimal'})
+            
             # now that we prepared the dict, let's pass it on.
             for _ in range(int(args['--repeat'])):
                 loop.run_until_complete(
                     protocol.send_command_ack(
-                        args['<id>'], command))
+                        cargs, command))
         else:
             loop.run_forever()
     except KeyboardInterrupt:
