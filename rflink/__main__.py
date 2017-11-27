@@ -26,7 +26,7 @@ import sys
 import pkg_resources
 from docopt import docopt
 
-from .protocol import (
+from rflink.protocol import (
     EventHandling,
     InverterProtocol,
     PacketHandling,
@@ -47,7 +47,7 @@ PROTOCOLS = {
 ALL_COMMANDS = ['on', 'off', 'allon', 'alloff', 'up', 'down', 'stop', 'disco+', 'disco-', 'mode0', 'mode1', 'mode2', 'mode3','mode4','mode5','mode6','mode7','mode8','pair','unpair','bright','color']
 
 
-from .parser import COMMAND_TEMPLATES 
+from rflink.parser import COMMAND_TEMPLATES 
 
 
 def main(argv=sys.argv[1:], loop=None):
@@ -105,15 +105,15 @@ def main(argv=sys.argv[1:], loop=None):
             
             cargs = {}
             # Insert protocol,id,switch,value,<command> key-value pairs in the dict 
-            cargs.update((c for args.key() in ['<id>','<switch>','<value>']))
+            cargs.update(args)
             
             if args['<value>']:
                cargs.update({'type':'switch_value_command'})
-            elif args['<command>']
+            elif args['<command>']:
                cargs.update({'type':'command'})
-            elif args['<switch>']
+            elif args['<switch>']:
                cargs.update({'type':'switch_command'})
-            elif args['<value>']
+            elif args['<value>']:
                cargs.update({'type':'switch_value_command'})
             else:
                cargs.update({'type':'minimal'})
@@ -131,3 +131,6 @@ def main(argv=sys.argv[1:], loop=None):
         loop.run_forever()
     finally:
         loop.close()
+
+if __name__ == "__main__":
+    main()

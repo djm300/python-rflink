@@ -8,7 +8,7 @@ from typing import Callable, List
 
 from serial_asyncio import create_serial_connection
 
-from .parser import (
+from rflink.parser import (
     decode_packet,
     deserialize_packet_id,
     encode_packet,
