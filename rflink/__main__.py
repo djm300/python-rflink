@@ -2,7 +2,7 @@
 
 Usage:
   rflink [-v | -vv] [options]
-  rflink [-v | -vv] [options] [--repeat <repeat>] (on|off|allon|alloff|up|down|stop) <id>
+  rflink [-v | -vv] [options] [--repeat <repeat>] (on,off,allon,alloff,up,down,stop,disco+,disco-,mode0,mode1,mode2,mode3,mode4,mode5,mode6,mode7,mode8,pair,unpair,bright,color) <id> <switch> <value>
   rflink (-h | --help)
   rflink --version
 
@@ -43,7 +43,19 @@ PROTOCOLS = {
     'repeat': RepeaterProtocol,
 }
 
-ALL_COMMANDS = ['on', 'off', 'allon', 'alloff', 'up', 'down', 'stop']
+# Defines the values this tool will accept as <command>
+ALL_COMMANDS = ['on', 'off', 'allon', 'alloff', 'up', 'down', 'stop', 'disco+', 'disco-', 'mode0', 'mode1', 'mode2', 'mode3','mode4','mode5','mode6','mode7','mode8','pair','unpair','bright','color']
+
+
+"""
+Defines the presence and structure of parameters in the command we will send to RFLink
+
+'minimal': '{node};{protocol};{id};',
+'command': '{node};{protocol};{id};{command};',
+'switch_command': '{node};{protocol};{id};{switch};{command};',
+'switch_value_command': '{node};{protocol};{id};{switch};{value};{command};'
+"""
+from .parser import COMMAND_TEMPLATES 
 
 
 def main(argv=sys.argv[1:], loop=None):
@@ -69,10 +81,11 @@ def main(argv=sys.argv[1:], loop=None):
     command = next((c for c in ALL_COMMANDS if args[c] is True), None)
 
     if command:
+        # Valid command keyword was found and we assume this is a command
         protocol = PROTOCOLS['command']
     else:
+        # It's not a command: event, print, invert, repeat
         protocol = PROTOCOLS[args['-m']]
-
     conn = create_rflink_connection(
         protocol=protocol,
         host=args['--host'],
@@ -86,6 +99,10 @@ def main(argv=sys.argv[1:], loop=None):
 
     try:
         if command:
+            # device_id is no longer sufficient for containing all the command info. We replace the string device_id by a dict which contains all provided parameters, including a 'type' key indicating the structure the packet should have on the wire to the RFLink.
+            # TODO: construct dict of arguments command, switch, id, type
+            
+            # now that we prepared the dict, let's pass it on.
             for _ in range(int(args['--repeat'])):
                 loop.run_until_complete(
                     protocol.send_command_ack(
