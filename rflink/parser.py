@@ -159,6 +159,7 @@ UNITS = {
     'sound': None,
     # might be °F, but default to something
     'temp': '°C',
+    'type': None,
     'uv': None,
     'ver': None,
     'volt': 'v',
@@ -309,22 +310,8 @@ def parse_banner(banner: str) -> dict:
 
 def encode_packet(packet: dict) -> str:
     """Construct packet string from packet dictionary.
-
-    >>> encode_packet({
-    ...     'protocol': 'newkaku',
-    ...     'id': '000001',
-    ...     'switch': '01',
-    ...     'command': 'on',
-    ... })
-    '10;newkaku;000001;01;on;'
+    Will use one of the following templates in dict COMMAND_TEMPLATES    
     """
-    
-    """
-    Will use one of the following templates in dict COMMAND_TEMPLATES
-    
-    """
-    
-    log.debug("Packet encoding started for packet type "+COMMAND_TEMPLATES[packet['type']])
 
     if COMMAND_TEMPLATES[packet['type']]:
         SWITCH_COMMAND_TEMPLATE = COMMAND_TEMPLATES[packet['type']]

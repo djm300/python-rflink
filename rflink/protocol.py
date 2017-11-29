@@ -135,8 +135,8 @@ class PacketHandling(ProtocolBase):
         command['command'] = action
         log.debug('sending string command: %s', command)
         self.send_packet(command)
-        
-    # Define a new send_command that accepts a dict instead of a serialised device_id string    
+
+    # Define a new send_command that accepts a dict instead of a serialised device_id string
     def _send_command_dict(self, cargs, action):
         """Send device command to rflink gateway."""
         log.debug("Send_command started ")
@@ -147,7 +147,6 @@ class PacketHandling(ProtocolBase):
         log.debug('sending dict command dictionary: %s', cargs)
         self.send_packet(cargs)
 
-
     # Check if argument is a string or a dict and dispatch to the right command
     def send_command(self, device_id, action):
         log.debug("Send_command started ")
@@ -157,7 +156,8 @@ class PacketHandling(ProtocolBase):
             self._send_command_dict(device_id, action)
         elif isinstance(device_id, basestring):
             self._send_command_string(device_id, action)
-        
+
+
 class CommandSerialization(ProtocolBase):
     """Logic for ensuring asynchronous commands are send in order."""
 
@@ -240,7 +240,7 @@ class EventHandling(PacketHandling):
                 self.handle_event(event)
 
     def handle_event(self, event):
-        """Default handling of incoming event (print)."""
+        """Handle incoming event (print)."""
         string = '{id:<32} '
         if 'command' in event:
             string += '{command}'
