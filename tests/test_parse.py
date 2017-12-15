@@ -77,6 +77,9 @@ PROTOCOL_SAMPLES = os.path.join(
         'command': 'up',
     }]
 ])
+# TODO: Set Milight format testing up here
+
+
 def test_packet_parsing(packet, expect):
     """Packet should be broken up into their primitives."""
     result = decode_packet(packet)
