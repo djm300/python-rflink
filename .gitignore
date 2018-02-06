@@ -56,3 +56,6 @@ ENV/
 
 # direnv
 .direnv
+
+__init__.py
+__main__.py
